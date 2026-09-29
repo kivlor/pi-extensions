@@ -1,0 +1,48 @@
+# pi-subagents-lite
+
+Minimal subagent delegation for [pi](https://github.com/earendil-works/pi) — the pi-voice loading style: pure TypeScript, no build step. Lives in the [pi-extensions](../..) monorepo.
+
+Ships as a pi package (`pi.extensions` → `./index.ts`) and loads raw TS via jiti.
+
+## What it adds
+
+- **`subagent` tool** — runs a task in a fresh, throwaway child session (in-memory, no persisted session file) with its own clean context, and returns the child's final answer. Params: `task`, `agent?`, `model?`, `cwd?`.
+- **Custom agents, Codex-style** — plain markdown files with YAML frontmatter, discovered from:
+  1. `.pi/agents/` in the current project
+  2. `~/.pi/agent/agents/`
+- **`/agents`** — list agents · `/agents <name>` — inspect one · `/agents:new <name>` — scaffold one.
+
+## Agent file format
+
+```markdown
+---
+description: Reviews code for bugs and security issues
+model: anthropic/claude-sonnet-4.5
+thinking: high
+tools: ["read", "bash", "grep"]
+---
+
+You are a meticulous code reviewer. … (this body is the agent's system prompt)
+```
+
+All frontmatter fields are optional. The filename (minus `.md`) is the agent name unless overridden by `name:`.
+
+## Install
+
+```bash
+pi install ~/Code/pi-extensions/extensions/subagents-lite
+# or from the repo root:
+pi install ../../pi-extensions/extensions/subagents-lite --local
+```
+
+## Usage
+
+Ask pi: *"Use a subagent with the code-reviewer agent to review src/foo.ts"*, and the model calls:
+
+```json
+{ "task": "Review src/foo.ts ...", "agent": "code-reviewer" }
+```
+
+## Not in v1 (deliberately)
+
+Async/background runs, supervisor channels, scripted multi-agent workflows. Those are why pi-subagents is big; this is the 80% in ~200 lines.

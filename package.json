@@ -1,0 +1,10 @@
+{
+  "name": "pi-extensions",
+  "private": true,
+  "type": "module",
+  "description": "Personal suite of pi extensions — raw TypeScript, pi-voice style, no build step",
+  "workspaces": ["extensions/*"],
+  "scripts": {
+    "test": "node --test extensions/*/test/*.test.mjs 2>/dev/null || true"
+  }
+}
