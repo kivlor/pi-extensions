@@ -8,14 +8,14 @@ Pi transpiles at load time; the source tree *is* the published artifact.
 
 | Extension | What it does |
 |---|---|
-| [`subagents-lite`](extensions/subagents-lite/) | `subagent` tool (fresh in-memory child session) + Codex-style markdown custom agents (`/agents`) |
+| [`subagents`](extensions/subagents/) | `subagent` tool (fresh in-memory child session) + Codex-style markdown custom agents (`/agents`) |
 
 ## Layout
 
 ```
 pi-extensions/
   extensions/
-    subagents-lite/
+    subagents/
       package.json     # name, pi.extensions: ["./index.ts"], peerDependencies
       index.ts         # barrel: export { default } from "./src/index.ts"
       src/             # all implementation, raw .ts
@@ -26,7 +26,7 @@ pi-extensions/
 Install one extension by path — pi loads it in place, no copying:
 
 ```bash
-pi install ~/Code/pi-extensions/extensions/subagents-lite
+pi install ~/Code/pi-extensions/extensions/subagents
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`

@@ -1,4 +1,4 @@
-# pi-subagents-lite
+# pi-subagents
 
 Minimal subagent delegation for [pi](https://github.com/earendil-works/pi) — the pi-voice loading style: pure TypeScript, no build step. Lives in the [pi-extensions](../..) monorepo.
 
@@ -30,9 +30,9 @@ All frontmatter fields are optional. The filename (minus `.md`) is the agent nam
 ## Install
 
 ```bash
-pi install ~/Code/pi-extensions/extensions/subagents-lite
+pi install ~/Code/pi-extensions/extensions/subagents
 # or from the repo root:
-pi install ../../pi-extensions/extensions/subagents-lite --local
+pi install ../../pi-extensions/extensions/subagents --local
 ```
 
 ## Usage

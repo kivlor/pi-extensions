@@ -1,5 +1,5 @@
 /**
- * pi-subagents-lite — entry point.
+ * pi-subagents — entry point.
  *
  * Registers:
  *   - `subagent` tool: run a bounded task in a fresh child session
