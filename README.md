@@ -9,6 +9,7 @@ Pi transpiles at load time; the source tree *is* the published artifact.
 | Extension | What it does |
 |---|---|
 | [`subagents`](extensions/subagents/) | `subagent` tool (fresh in-memory child session) + Codex-style markdown custom agents (`/agents`) |
+| [`web-search`](extensions/web-search/) | Exa-backed `web_search` + `web_fetch` tools (`/websearch` status command) |
 
 ## Layout
 
