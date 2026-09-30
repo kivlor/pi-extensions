@@ -8,7 +8,7 @@ import {
   createAgentSession,
   SessionManager,
   defineTool,
-  type ToolCallUpdate,
+  type AgentToolUpdateCallback,
 } from "@earendil-works/pi-coding-agent";
 import type { AgentDefinition } from "./agents.ts";
 
@@ -45,7 +45,7 @@ export const subagentTool = defineTool({
     ),
   }),
 
-  async execute(toolCallId, params, signal, onUpdate: (u: ToolCallUpdate) => void) {
+  async execute(toolCallId, params, signal, onUpdate: AgentToolUpdateCallback<unknown>) {
     const { task, agent, model, cwd } = params;
 
     let definition: AgentDefinition | undefined;
@@ -62,7 +62,9 @@ export const subagentTool = defineTool({
     const childModel = model || definition?.model;
     const thinkingLevel = (definition?.thinking as "low" | "medium" | "high" | undefined) ?? "low";
 
-    onUpdate({ message: `Starting subagent${definition ? ` "${definition.name}"` : ""}…` });
+    onUpdate({
+      content: [{ type: "text", text: `Starting subagent${definition ? ` "${definition.name}"` : ""}…` }],
+    });
 
     const { session } = await createAgentSession({
       sessionManager: SessionManager.inMemory(),
