@@ -38,7 +38,7 @@ export const subagentTool = defineTool({
     ),
     model: Type.Optional(
       Type.String({
-        description: "Model override for the subagent, e.g. anthropic/claude-sonnet-4.5.",
+        description: "Model override for the subagent, e.g. z-ai/glm-5.3.",
       }),
     ),
     cwd: Type.Optional(

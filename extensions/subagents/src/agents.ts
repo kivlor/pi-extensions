@@ -5,7 +5,7 @@
  *
  *   ---
  *   description: Reviews code for bugs and security issues
- *   model: anthropic/claude-sonnet-4.5
+ *   model: z-ai/glm-5.3
  *   thinking: medium
  *   tools: ["read", "bash", "grep"]
  *   ---
