@@ -14,33 +14,10 @@ directly — no build step or compiled artifacts.
 
 ## Install
 
-Install an extension by path — pi loads it in place:
-
 ```bash
-pi install ~/Code/pi-extensions/extensions/<name>
+pi install @kivlor/pi-subagents
+pi install @kivlor/pi-web-search
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`
 instead of the personal one. Manage installed extensions with `pi config`.
-
-## Adding a new extension
-
-1. Create `extensions/<name>/` with a `package.json` containing
-   `"pi": { "extensions": ["./index.ts"] }` and peer dependencies on
-   `@earendil-works/pi-coding-agent` (+ `pi-ai` if you use `Type`)
-2. Add an `index.ts` barrel exporting a default extension factory:
-   `export default function (pi: ExtensionAPI) { … }`
-
-Conventions:
-
-- The factory stays registration-only; lazy-load feature code from commands,
-  tools, and `session_start` — pi may evaluate the module without a session
-- No processes, sockets, watchers, or timers in the factory
-- Ship raw TS; declare host packages (`pi-coding-agent`, `pi-tui`, `pi-ai`)
-  in `peerDependencies` only — never bundle them
-- Dev-loop a single extension without touching settings:
-  `pi -ne --extension extensions/<name>/index.ts -p "..."`
-  (`-ne` disables installed packages to avoid tool-name conflicts)
-
-To share one: `npm publish` from its directory — the `files` list ships the
-raw TypeScript, which pi loads natively.
