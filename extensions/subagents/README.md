@@ -1,16 +1,41 @@
-# pi-subagents
+# @kivlor/pi-subagents
 
-Subagent delegation for the [pi coding agent](https://github.com/earendil-works/pi) — pure TypeScript, no build step.
+Subagent delegation for the Pi coding agent: run a task in a fresh child
+session with its own clean context, optionally guided by a custom agent
+defined in a plain markdown file.
 
-## What it adds
+## Install
 
-- **`subagent` tool** — runs a task in a fresh, throwaway child session (in-memory, no persisted session file) with its own clean context, and returns the child's final answer. Params: `task`, `agent?`, `model?`, `cwd?`.
-- **Custom agents, Codex-style** — plain markdown files with YAML frontmatter, discovered from:
-  1. `.pi/agents/` in the current project
-  2. `~/.pi/agent/agents/`
-- **`/agents`** — list agents · `/agents <name>` — inspect one · `/agents:new <name>` — scaffold one.
+```bash
+pi install @kivlor/pi-subagents
+```
 
-## Agent file format
+`--local`/`-l` writes the declaration to the project's `.pi/settings.json`
+instead of the personal one. Manage installed extensions with `pi config`.
+
+## Tools
+
+- **`subagent`** — runs a task in a fresh, throwaway child session
+  (in-memory, no persisted session file) and returns the child's final
+  answer. Params: `task`, `agent?`, `model?`, `cwd?`.
+
+## Usage
+
+Ask pi: *"Use a subagent with the code-reviewer agent to review src/foo.ts"*,
+and the model calls:
+
+```json
+{ "task": "Review src/foo.ts ...", "agent": "code-reviewer" }
+```
+
+## Custom agents
+
+Plain markdown files with YAML frontmatter, discovered from:
+
+1. `.pi/agents/` in the current project
+2. `~/.pi/agent/agents/`
+
+File format:
 
 ```markdown
 ---
@@ -23,22 +48,11 @@ tools: ["read", "bash", "grep"]
 You are a meticulous code reviewer. … (this body is the agent's system prompt)
 ```
 
-All frontmatter fields are optional. The filename (minus `.md`) is the agent name unless overridden by `name:`.
+All frontmatter fields are optional. The filename (minus `.md`) is the agent
+name unless overridden by `name:`.
 
-## Install
+## Commands
 
-```bash
-pi install @kivlor/pi-subagents
-```
-
-## Usage
-
-Ask pi: *"Use a subagent with the code-reviewer agent to review src/foo.ts"*, and the model calls:
-
-```json
-{ "task": "Review src/foo.ts ...", "agent": "code-reviewer" }
-```
-
-## Not included
-
-Async/background runs, supervisor channels, and scripted multi-agent workflows — this extension covers the common single-task delegation case only.
+- **`/agents`** — list agents
+- **`/agents <name>`** — inspect one
+- **`/agents:new <name>`** — scaffold one

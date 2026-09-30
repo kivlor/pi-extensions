@@ -1,6 +1,16 @@
 # @kivlor/pi-web-search
 
-Web search for the Pi coding agent, powered by Exa. Pure TypeScript, no build step.
+Web search for the Pi coding agent, powered by Exa: search the web and fetch
+full text content for known URLs.
+
+## Install
+
+```bash
+pi install @kivlor/pi-web-search
+```
+
+`--local`/`-l` writes the declaration to the project's `.pi/settings.json`
+instead of the personal one. Manage installed extensions with `pi config`.
 
 ## Tools
 
@@ -10,7 +20,12 @@ Web search for the Pi coding agent, powered by Exa. Pure TypeScript, no build st
 - **`web_fetch`** — fetch full text content for known URLs via Exa's
   `/contents` endpoint (up to 10 per call).
 
-## Command
+## Usage
+
+Ask pi: *"search the web for recent news about X"* or *"fetch the full
+content of this URL"*, and the model calls the matching tool.
+
+## Commands
 
 - **`/websearch`** — show Exa configuration status.
 
@@ -24,18 +39,3 @@ Resolution order:
 With a key, searches hit the Exa REST API (`api.exa.ai`, override with
 `exaBaseUrl` in config or `EXA_BASE_URL`). Without a key, they fall back to
 the free Exa MCP endpoint (`mcp.exa.ai`), which is rate-limited (429s).
-
-## Install
-
-```bash
-pi install @kivlor/pi-web-search
-```
-
-## Dev loop
-
-```bash
-pi -ne --extension extensions/web-search/index.ts -p "search the web for ..."
-```
-
-(`-ne` disables installed packages to avoid tool-name conflicts with any
-other package that registers `web_search`.)
