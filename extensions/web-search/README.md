@@ -1,8 +1,6 @@
 # @kivlor/pi-web-search
 
-Exa-backed web search for the Pi coding agent — raw TypeScript, loaded
-directly via jiti, no build step. Mirrors the Exa lane of `pi-web-access`
-with a much smaller footprint.
+Web search for the Pi coding agent, powered by Exa. Pure TypeScript, no build step.
 
 ## Tools
 
@@ -18,7 +16,7 @@ with a much smaller footprint.
 
 ## Configuration
 
-Resolution order (same as pi-web-access):
+Resolution order:
 
 1. `exaApiKey` in `~/.pi/agent/web-search.json`
 2. `EXA_API_KEY` environment variable
@@ -39,5 +37,5 @@ pi install ~/Code/pi-extensions/extensions/web-search
 pi -ne --extension extensions/web-search/index.ts -p "search the web for ..."
 ```
 
-(`-ne` disables installed packages to avoid tool-name conflicts with
-`pi-web-access`, which also registers `web_search`.)
+(`-ne` disables installed packages to avoid tool-name conflicts with any
+other package that registers `web_search`.)

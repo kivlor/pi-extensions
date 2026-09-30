@@ -1,8 +1,6 @@
 # pi-subagents
 
-Minimal subagent delegation for [pi](https://github.com/earendil-works/pi) — the pi-voice loading style: pure TypeScript, no build step. Lives in the [pi-extensions](../..) monorepo.
-
-Ships as a pi package (`pi.extensions` → `./index.ts`) and loads raw TS via jiti.
+Subagent delegation for the [pi coding agent](https://github.com/earendil-works/pi) — pure TypeScript, no build step.
 
 ## What it adds
 
@@ -31,8 +29,6 @@ All frontmatter fields are optional. The filename (minus `.md`) is the agent nam
 
 ```bash
 pi install ~/Code/pi-extensions/extensions/subagents
-# or from the repo root:
-pi install ../../pi-extensions/extensions/subagents --local
 ```
 
 ## Usage
@@ -43,6 +39,6 @@ Ask pi: *"Use a subagent with the code-reviewer agent to review src/foo.ts"*, an
 { "task": "Review src/foo.ts ...", "agent": "code-reviewer" }
 ```
 
-## Not in v1 (deliberately)
+## Not included
 
-Async/background runs, supervisor channels, scripted multi-agent workflows. Those are why pi-subagents is big; this is the 80% in ~200 lines.
+Async/background runs, supervisor channels, and scripted multi-agent workflows — this extension covers the common single-task delegation case only.
