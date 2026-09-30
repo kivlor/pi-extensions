@@ -28,7 +28,7 @@ the free Exa MCP endpoint (`mcp.exa.ai`), which is rate-limited (429s).
 ## Install
 
 ```bash
-pi install ~/Code/pi-extensions/extensions/web-search
+pi install @kivlor/pi-web-search
 ```
 
 ## Dev loop

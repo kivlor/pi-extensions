@@ -28,7 +28,7 @@ All frontmatter fields are optional. The filename (minus `.md`) is the agent nam
 ## Install
 
 ```bash
-pi install ~/Code/pi-extensions/extensions/subagents
+pi install @kivlor/pi-subagents
 ```
 
 ## Usage
