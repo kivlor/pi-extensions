@@ -241,7 +241,10 @@ export default function piGoal(pi: ExtensionAPI): void {
 		description: "Set, view, pause, resume, or clear a long-running goal",
 		getArgumentCompletions: (prefix) => {
 			const values = ["pause", "resume", "clear", "status"];
-			const filtered = values.filter((value) => value.startsWith(prefix));
+			// Never offer a value that is already fully typed: an open completion
+			// popup binds Enter to "confirm selection" instead of "submit input",
+			// which makes a fully-typed command need two Enters to run.
+			const filtered = values.filter((value) => value.startsWith(prefix) && value !== prefix);
 			return filtered.length ? filtered.map((value) => ({ value, label: value })) : null;
 		},
 		handler: async (args, ctx) => {
@@ -273,8 +276,15 @@ export default function piGoal(pi: ExtensionAPI): void {
 				const status: GoalState["status"] = trimmed === "pause" ? "paused" : "active";
 				const next = { ...goal, status, updatedAt: now };
 				persist(pi, ctx, next);
-				emitGoalEvent(pi, status === "active" ? "resumed" : "paused", next);
-				if (status === "active" && ctx.isIdle()) queueContinuation(pi, next);
+				if (status === "active") {
+					// Emit exactly one message: when idle, the continuation trigger
+					// already delivers the full continuation prompt as the turn prompt;
+					// appending a separate "resumed" event here would duplicate it.
+					if (ctx.isIdle()) queueContinuation(pi, next);
+					else emitGoalEvent(pi, "resumed", next);
+				} else {
+					emitGoalEvent(pi, "paused", next);
+				}
 				return;
 			}
 
