@@ -16,7 +16,7 @@ directly — no build step or compiled artifacts.
 
 ```bash
 pi install @kivlor/pi-subagents
-pi install @kivlor/pi-web-search
+pi install @kivlor/pi-websearch
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`

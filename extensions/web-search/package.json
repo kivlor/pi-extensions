@@ -1,5 +1,5 @@
 {
-  "name": "@kivlor/pi-web-search",
+  "name": "@kivlor/pi-websearch",
   "version": "0.1.0",
   "description": "Exa-backed web search and content fetch for pi — raw TypeScript, no build step",
   "type": "module",

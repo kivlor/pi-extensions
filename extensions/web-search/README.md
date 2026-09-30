@@ -1,4 +1,4 @@
-# @kivlor/pi-web-search
+# @kivlor/pi-websearch
 
 Web search for the Pi coding agent, powered by Exa: search the web and fetch
 full text content for known URLs.
@@ -6,7 +6,7 @@ full text content for known URLs.
 ## Install
 
 ```bash
-pi install @kivlor/pi-web-search
+pi install @kivlor/pi-websearch
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`
