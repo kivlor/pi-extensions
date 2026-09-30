@@ -28,6 +28,12 @@ and the model calls:
 { "task": "Review src/foo.ts ...", "agent": "code-reviewer" }
 ```
 
+## Commands
+
+- **`/agents`** — list agents
+- **`/agents <name>`** — inspect one
+- **`/agents:new <name>`** — scaffold one
+
 ## Custom agents
 
 Plain markdown files with YAML frontmatter, discovered from:
@@ -50,9 +56,3 @@ You are a meticulous code reviewer. … (this body is the agent's system prompt)
 
 All frontmatter fields are optional. The filename (minus `.md`) is the agent
 name unless overridden by `name:`.
-
-## Commands
-
-- **`/agents`** — list agents
-- **`/agents <name>`** — inspect one
-- **`/agents:new <name>`** — scaffold one
