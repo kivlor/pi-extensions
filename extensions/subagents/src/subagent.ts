@@ -11,6 +11,10 @@ import {
   type AgentToolUpdateCallback,
 } from "@earendil-works/pi-coding-agent";
 import type { AgentDefinition } from "./agents.ts";
+import {
+  createLiveStatus,
+  createThrottledEmitter,
+} from "./live-status.ts";
 
 const MAX_RESULT_CHARS = 60_000;
 
@@ -62,16 +66,34 @@ export const subagentTool = defineTool({
     const childModel = model || definition?.model;
     const thinkingLevel = (definition?.thinking as "low" | "medium" | "high" | undefined) ?? "low";
 
-    onUpdate({
-      content: [{ type: "text", text: `Starting subagent${definition ? ` "${definition.name}"` : ""}…` }],
-    });
+    const label = definition ? `"${definition.name}"` : "";
+    const status = createLiveStatus(label);
+    const emitter = createThrottledEmitter((text) =>
+      onUpdate({ content: [{ type: "text", text }], details: {} }),
+    );
+    emitter.flush(status);
+
+    // pi registers MCP tools (mcp__<server>__<tool>) with default exposure "codemode":
+    // they are only callable through the codemode tool. When an agent's tool list
+    // references MCP tools, make sure codemode is enabled in the child session or
+    // the MCP tools exist but are unreachable.
+    const requestedTools = definition?.tools;
+    const childTools =
+      requestedTools && requestedTools.some((t) => t.startsWith("mcp__"))
+        ? [...new Set(["codemode", ...requestedTools])]
+        : requestedTools;
 
     const { session } = await createAgentSession({
       sessionManager: SessionManager.inMemory(),
       cwd: cwd || process.cwd(),
       ...(childModel ? { model: childModel } : {}),
       thinkingLevel,
-      ...(definition?.tools ? { tools: definition.tools } : {}),
+      ...(childTools ? { tools: childTools } : {}),
+    });
+
+    const unsubscribe = session.subscribe((event) => {
+      status.handleEvent(event);
+      emitter.maybeRender(status);
     });
 
     const promptParts: string[] = [];
@@ -85,6 +107,8 @@ export const subagentTool = defineTool({
 
     try {
       await session.prompt(promptParts.join("\n\n"), { signal });
+      status.finish();
+      emitter.flush(status);
       let text = session.getLastAssistantText() ?? "";
       if (text.length > MAX_RESULT_CHARS) {
         text =
@@ -95,7 +119,12 @@ export const subagentTool = defineTool({
         content: [{ type: "text", text: text || "(subagent returned no text)" }],
         details: { agent: definition?.name ?? "default", task },
       };
+    } catch (error) {
+      status.finish(error);
+      emitter.flush(status);
+      throw error;
     } finally {
+      unsubscribe();
       session.dispose();
     }
   },
