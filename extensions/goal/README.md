@@ -1,6 +1,6 @@
 # pi-goal
 
-Persistent autonomous goals for the [pi coding agent](https://github.com/earendil-works/pi) — a simplified port of [Michaelliv/pi-goal](https://github.com/Michaelliv/pi-goal).
+Persistent autonomous goals for the [pi coding agent](https://github.com/earendil-works/pi).
 
 `/goal` keeps Pi working toward a long-running, thread-scoped objective until the
 model marks it complete, the user pauses/clears it, or a token budget runs out.
