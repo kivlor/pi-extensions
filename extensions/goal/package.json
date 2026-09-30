@@ -1,0 +1,29 @@
+{
+  "name": "@kivlor/pi-goal",
+  "version": "0.1.0",
+  "description": "Goal tracking for pi — set a goal, keep it in view, check it off",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-coding-agent",
+    "extension",
+    "goal",
+    "task-tracking"
+  ],
+  "files": [
+    "index.ts",
+    "src",
+    "README.md"
+  ],
+  "pi": {
+    "extensions": ["./index.ts"]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}
