@@ -2,7 +2,7 @@
  * Goal state and helpers — simplified port of Michaelliv/pi-goal.
  */
 
-export type GoalStatus = "active" | "paused" | "budget_limited" | "complete";
+export type GoalStatus = "active" | "paused" | "error_paused" | "budget_limited" | "complete";
 
 export interface GoalState {
 	id: string;
@@ -13,6 +13,10 @@ export interface GoalState {
 	timeUsedSeconds: number;
 	createdAt: number;
 	updatedAt: number;
+	/** Number of consecutive turns that ended with an error. */
+	consecutiveErrors: number;
+	/** The last error message seen, if any. */
+	lastError: string | null;
 }
 
 /** Parse "--tokens 50k" / "--tokens=1m" from a /goal argument string. */
@@ -55,6 +59,7 @@ export function statusLine(state: GoalState | null): string | undefined {
 		: ` (${formatElapsed(state.timeUsedSeconds)})`;
 	if (state.status === "active") return `Pursuing goal${budget}`;
 	if (state.status === "paused") return "Goal paused (/goal resume)";
+	if (state.status === "error_paused") return `Goal paused due to errors (${state.lastError ?? "unknown"})`;
 	if (state.status === "budget_limited") return `Goal unmet${budget}`;
 	return `Goal achieved${budget}`;
 }
@@ -63,6 +68,9 @@ export function truncateObjective(objective: string, max = 96): string {
 	const singleLine = objective.replace(/\s+/g, " ").trim();
 	return singleLine.length > max ? `${singleLine.slice(0, max - 1)}…` : singleLine;
 }
+
+/** Default threshold for consecutive errors before pausing. */
+export const ERROR_PAUSE_THRESHOLD = 3;
 
 export function createGoalState(objective: string, tokenBudget: number | null, now = Date.now()): GoalState {
 	return {
@@ -74,14 +82,18 @@ export function createGoalState(objective: string, tokenBudget: number | null, n
 		timeUsedSeconds: 0,
 		createdAt: now,
 		updatedAt: now,
+		consecutiveErrors: 0,
+		lastError: null,
 	};
 }
 
-/** Add a turn's token/time usage, flipping to budget_limited when exhausted. */
+/** Add a turn's token/time usage, tracking consecutive errors. */
 export function accountGoalTurn(
 	state: GoalState,
 	tokenDelta: number,
 	elapsedSeconds: number,
+	isError = false,
+	errorMessage: string | null = null,
 	now = Date.now(),
 ): GoalState {
 	let next: GoalState = {
@@ -89,6 +101,9 @@ export function accountGoalTurn(
 		tokensUsed: state.tokensUsed + Math.max(0, tokenDelta),
 		timeUsedSeconds: state.timeUsedSeconds + Math.max(0, elapsedSeconds),
 		updatedAt: now,
+		// Reset consecutive errors on successful turn, increment on error
+		consecutiveErrors: isError ? state.consecutiveErrors + 1 : 0,
+		lastError: isError ? errorMessage : null,
 	};
 	if (next.status === "active" && next.tokenBudget != null && next.tokensUsed >= next.tokenBudget) {
 		next = { ...next, status: "budget_limited" };

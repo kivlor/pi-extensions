@@ -25,6 +25,7 @@ import {
 	statusLine,
 	tokenDeltaFromUsage,
 	truncateObjective,
+	ERROR_PAUSE_THRESHOLD,
 	type GoalState,
 } from "./goal-state.ts";
 
@@ -34,7 +35,6 @@ const EVENT_TYPE = "pi-goal-event";
 let goal: GoalState | null = null;
 let activeTurnStartedAt: number | null = null;
 let activeGoalThisTurnId: string | null = null;
-let continuationQueued = false;
 
 function continuationPrompt(state: GoalState): string {
 	const tokenBudget = state.tokenBudget == null ? "none" : String(state.tokenBudget);
@@ -85,6 +85,8 @@ function goalContent(kind: string, state: GoalState | null): string {
 			return continuationPrompt(state);
 		case "budget_limited":
 			return budgetLimitPrompt(state);
+		case "error_paused":
+			return `The active goal has been paused due to repeated errors. Stop pursuing it for now and wait for further instructions.\n\nObjective: ${state.objective}\n\nLast error: ${state.lastError ?? "unknown"}\n\nUse /goal resume to continue when the error condition is resolved.`;
 		case "paused":
 			return `The active goal has been paused by the user. Stop pursuing it for now and wait for further instructions.\n\nObjective: ${state.objective}`;
 		case "cleared":
@@ -146,20 +148,9 @@ function syncGoalTools(pi: ExtensionAPI) {
 
 function persist(pi: ExtensionAPI, ctx: ExtensionContext, next: GoalState | null) {
 	goal = next;
-	if (next?.status !== "active") continuationQueued = false;
 	pi.appendEntry(CUSTOM_TYPE, { goal: next });
 	updateStatusBar(ctx);
 	syncGoalTools(pi);
-}
-
-function queueContinuation(pi: ExtensionAPI, state: GoalState) {
-	if (continuationQueued || state.status !== "active") return;
-	continuationQueued = true;
-	queueMicrotask(() => {
-		continuationQueued = false;
-		if (!goal || goal.id !== state.id || goal.status !== "active") return;
-		emitGoalEvent(pi, "continuation", goal, { triggerTurn: true, deliverAs: "followUp" });
-	});
 }
 
 export default function piGoal(pi: ExtensionAPI): void {
@@ -273,15 +264,25 @@ export default function piGoal(pi: ExtensionAPI): void {
 					ctx.ui.notify("No goal is set.", "warning");
 					return;
 				}
+				if (trimmed === "pause" && (goal.status === "paused" || goal.status === "error_paused")) {
+					ctx.ui.notify("Goal is already paused.", "info");
+					return;
+				}
+				if (trimmed === "resume" && goal.status === "active") {
+					ctx.ui.notify("Goal is already active.", "info");
+					return;
+				}
 				const status: GoalState["status"] = trimmed === "pause" ? "paused" : "active";
-				const next = { ...goal, status, updatedAt: now };
+				const next = {
+					...goal,
+					status,
+					updatedAt: now,
+					// Reset error tracking when resuming
+					...(trimmed === "resume" ? { consecutiveErrors: 0, lastError: null } : {}),
+				};
 				persist(pi, ctx, next);
 				if (status === "active") {
-					// Emit exactly one message: when idle, the continuation trigger
-					// already delivers the full continuation prompt as the turn prompt;
-					// appending a separate "resumed" event here would duplicate it.
-					if (ctx.isIdle()) queueContinuation(pi, next);
-					else emitGoalEvent(pi, "resumed", next);
+					emitGoalEvent(pi, "resumed", next, { triggerTurn: ctx.isIdle() });
 				} else {
 					emitGoalEvent(pi, "paused", next);
 				}
@@ -309,12 +310,11 @@ export default function piGoal(pi: ExtensionAPI): void {
 
 	pi.on("session_start", (event, ctx) => {
 		goal = latestStateFromSession(ctx);
-		continuationQueued = false;
 		activeTurnStartedAt = null;
 		activeGoalThisTurnId = null;
 		syncGoalTools(pi);
+		// Reload pauses an active goal so it does not silently resume.
 		if (goal?.status === "active" && event.reason === "reload") {
-			// Reload pauses an active goal so it does not silently resume.
 			goal = { ...goal, status: "paused", updatedAt: Date.now() };
 			persist(pi, ctx, goal);
 			ctx.ui.notify(
@@ -329,6 +329,11 @@ export default function piGoal(pi: ExtensionAPI): void {
 				`⚑ Goal restored: ${truncateObjective(goal.objective)}\nUse /goal pause to stop continuation, or /goal clear to remove it.`,
 				"info",
 			);
+		} else if (goal?.status === "error_paused") {
+			ctx.ui.notify(
+				`‖ Goal paused due to errors: ${truncateObjective(goal.objective)}\nLast error: ${goal.lastError ?? "unknown"}\nUse /goal resume to continue when resolved, or /goal clear to stop.`,
+				"warning",
+			);
 		}
 	});
 
@@ -336,6 +341,12 @@ export default function piGoal(pi: ExtensionAPI): void {
 		activeTurnStartedAt = Date.now();
 		activeGoalThisTurnId = goal?.status === "active" ? goal.id : null;
 	});
+
+type AssistantMessageWithStop = {
+		stopReason?: string;
+		errorMessage?: string;
+		usage?: { totalTokens?: number; input?: number; output?: number; cacheRead?: number; cacheWrite?: number };
+	};
 
 	pi.on("turn_end", (event, ctx) => {
 		if (!goal || activeGoalThisTurnId !== goal.id) {
@@ -346,19 +357,49 @@ export default function piGoal(pi: ExtensionAPI): void {
 		const elapsed = activeTurnStartedAt ? Math.max(0, Math.round((Date.now() - activeTurnStartedAt) / 1000)) : 0;
 		activeTurnStartedAt = null;
 		activeGoalThisTurnId = null;
-		const tokenDelta = tokenDeltaFromUsage(
-			(event.message as { usage?: { totalTokens?: number; input?: number; output?: number; cacheRead?: number; cacheWrite?: number } } | undefined)
-				?.usage,
-		);
-		const next = accountGoalTurn(goal, tokenDelta, elapsed);
+
+		const message = event.message as AssistantMessageWithStop | undefined;
+		const tokenDelta = tokenDeltaFromUsage(message?.usage);
+
+		// Detect if this turn ended with an error
+		const isError = message?.stopReason === "error" || message?.stopReason === "aborted";
+		const errorMessage = message?.errorMessage ?? null;
+
+		let next = accountGoalTurn(goal, tokenDelta, elapsed, isError, errorMessage);
+
+		// Check if we need to pause due to consecutive errors
+		if (next.status === "active" && next.consecutiveErrors >= ERROR_PAUSE_THRESHOLD) {
+			next = { ...next, status: "error_paused", updatedAt: Date.now() };
+		}
+
 		persist(pi, ctx, next);
+
 		if (next.status === "budget_limited") {
-			emitGoalEvent(pi, "budget_limited", next, { triggerTurn: true, deliverAs: "followUp" });
+			emitGoalEvent(pi, "budget_limited", next);
+		} else if (next.status === "error_paused") {
+			emitGoalEvent(pi, "error_paused", next);
+			ctx.ui.notify(
+				`‖ Goal paused due to ${next.consecutiveErrors} consecutive errors.\nLast error: ${errorMessage ?? "unknown"}\nUse /goal resume to continue when resolved.`,
+				"warning",
+			);
 		}
 	});
 
-	pi.on("agent_end", (_event, ctx) => {
-		if (!goal || goal.status !== "active" || ctx.hasPendingMessages()) return;
-		queueContinuation(pi, goal);
+	pi.on("agent_before_settle", (_event, ctx) => {
+		if (!goal || ctx.hasPendingMessages()) return undefined;
+
+		// Active goal: emit continuation and request next turn
+		if (goal.status === "active") {
+			emitGoalEvent(pi, "continuation", goal, { deliverAs: "followUp" });
+			return { continue: true };
+		}
+
+		// Budget limited: need one more turn for model to wrap up
+		// (event already emitted in turn_end)
+		if (goal.status === "budget_limited") {
+			return { continue: true };
+		}
+
+		return undefined;
 	});
 }

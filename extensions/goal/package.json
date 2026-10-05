@@ -1,6 +1,6 @@
 {
   "name": "@kivlor/pi-goal",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Goal tracking for pi — set a goal, keep it in view, check it off",
   "type": "module",
   "license": "MIT",
