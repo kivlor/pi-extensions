@@ -16,7 +16,8 @@ instead of the personal one. Manage installed extensions with `pi config`.
 
 Registers virtual models like `multiplexer/glm-5.3` that route requests to
 a list of provider variants you define. After 3 consecutive errors from a
-variant, it switches to the next one. Keeps trying until success or all
+variant, it switches to the next one. For non-retryable errors (quota/billing
+exhaustion), it switches immediately. Keeps trying until success or all
 variants are exhausted.
 
 Useful when you have multiple providers offering the same model (e.g., a
@@ -53,10 +54,23 @@ The virtual model will appear in `/model` and `--list-models` like any other.
 
 ## Behavior
 
+### Rate limit errors (429)
+- Switch immediately to next variant
+- Rate limits are transient, but better to try another variant than wait
+- Patterns detected: `429`, `rate limit`, `too many requests`, `ratelimit`, `request limit exceeded`
+
+### Non-retryable errors (quota/billing)
+- Switch immediately to next variant
+- These are permanent until fixed, so the multiplexer skips the blocked variant
+- Patterns detected: `GoUsageLimitError`, `FreeUsageLimitError`, `insufficient_quota`, `out of budget`, `quota exceeded`, `billing`, `Monthly usage limit reached`, `available balance`
+
+### Retryable errors (other transient)
 - Starts at the first variant in the list
 - On retry, increments the error counter for that variant
 - After 3 consecutive errors, switches to the next variant
 - Resets the error counter on switch
-- Exits with error when all variants exhausted
+- Examples: 500s, timeouts, network errors
 
-Works for any error type (rate limits, 500s, timeouts, etc.) — not just 429s.
+### Exhaustion
+- Exits with error when all variants exhausted
+- State persists across retries, so subsequent requests start from the working variant

@@ -4,13 +4,15 @@
  * Config: ~/.pi/multiplexer.json
  * {
  *   "models": {
- *     "glm-5.3": ["opencode-go/glm-5.3", "openrouter/glm-5.3"],
+ *     "glm-5.3": ["opencode-go/glm-5.3", "openrouter/z-ai/glm-5.3"],
  *     "claude-sonnet": ["opencode-go/claude-sonnet-4-5", "openrouter/anthropic/claude-sonnet-4"]
  *   }
  * }
  *
  * Creates virtual models like `multiplexer/glm-5.3` that try variants in order.
- * After 3 consecutive errors from a variant, switches to the next one.
+ * - For 429 rate limit errors: switch immediately to next variant
+ * - For quota/billing errors: switch immediately to next variant
+ * - For other errors: switch after 3 consecutive failures
  * Continues until success or all variants exhausted.
  */
 
@@ -35,6 +37,12 @@ interface MuxState {
 type MuxRequest = ModelRouteRequest<MuxState>;
 
 const ERRORS_BEFORE_SWITCH = 3;
+
+// Non-retryable error patterns - switch immediately (quota/billing exhaustion)
+const NON_RETRYABLE_ERROR_PATTERN = /(?:GoUsageLimitError|FreeUsageLimitError|insufficient_quota|out of budget|quota exceeded|billing|Monthly usage limit reached|available balance)/i;
+
+// Rate limit patterns - switch immediately to next variant
+const RATE_LIMIT_PATTERN = /(?:429|rate limit|too many requests|ratelimit|request limit exceeded)/i;
 
 const configPath = join(homedir(), ".pi", "multiplexer.json");
 
@@ -75,33 +83,70 @@ export default function (pi: ExtensionAPI) {
 					state = { index: 0, consecutiveErrors: 0, totalAttempts: 0 };
 				}
 
-				// On retry, track the failure
-				if (request.reason === "retry" && request.failed) {
-					state = {
-						index: state.index,
-						consecutiveErrors: state.consecutiveErrors + 1,
-						totalAttempts: state.totalAttempts + 1,
-					};
-
-					console.log(
-						`[multiplexer/${modelId}] Error ${state.consecutiveErrors}/${ERRORS_BEFORE_SWITCH} on variant ${state.index} (${variants[state.index]})`
-					);
-
-					// Switch variant after ERRORS_BEFORE_SWITCH consecutive failures
-					if (state.consecutiveErrors >= ERRORS_BEFORE_SWITCH) {
+				// Check for failed message
+				if (request.failed?.errorMessage) {
+					// For non-retryable errors (quota/billing), switch immediately
+					// These aren't transient - the variant is blocked until fixed
+					if (NON_RETRYABLE_ERROR_PATTERN.test(request.failed.errorMessage)) {
 						const nextIndex = state.index + 1;
 						if (nextIndex >= totalVariants) {
-							console.error(`[multiplexer/${modelId}] All ${totalVariants} variants exhausted`);
+							console.error(`[multiplexer/${modelId}] All ${totalVariants} variants exhausted (non-retryable error)`);
 						} else {
 							console.log(
-								`[multiplexer/${modelId}] Switching from variant ${state.index} to ${nextIndex}`
+								`[multiplexer/${modelId}] Non-retryable error on variant ${state.index}, switching to ${nextIndex}`
 							);
 						}
 						state = {
 							index: nextIndex,
 							consecutiveErrors: 0,
-							totalAttempts: state.totalAttempts,
+							totalAttempts: state.totalAttempts + 1,
 						};
+					}
+					// For rate limit errors (429), switch immediately to next variant
+					// Rate limits are transient but better to try another variant than wait
+					else if (RATE_LIMIT_PATTERN.test(request.failed.errorMessage)) {
+						const nextIndex = state.index + 1;
+						if (nextIndex >= totalVariants) {
+							console.error(`[multiplexer/${modelId}] All ${totalVariants} variants exhausted (rate limit)`);
+						} else {
+							console.log(
+								`[multiplexer/${modelId}] Rate limit on variant ${state.index}, switching to ${nextIndex}`
+							);
+						}
+						state = {
+							index: nextIndex,
+							consecutiveErrors: 0,
+							totalAttempts: state.totalAttempts + 1,
+						};
+					}
+					// For other retryable errors, track failures and switch after N consecutive
+					else if (request.reason === "retry") {
+						state = {
+							index: state.index,
+							consecutiveErrors: state.consecutiveErrors + 1,
+							totalAttempts: state.totalAttempts + 1,
+						};
+
+						console.log(
+							`[multiplexer/${modelId}] Error ${state.consecutiveErrors}/${ERRORS_BEFORE_SWITCH} on variant ${state.index} (${variants[state.index]})`
+						);
+
+						// Switch variant after ERRORS_BEFORE_SWITCH consecutive failures
+						if (state.consecutiveErrors >= ERRORS_BEFORE_SWITCH) {
+							const nextIndex = state.index + 1;
+							if (nextIndex >= totalVariants) {
+								console.error(`[multiplexer/${modelId}] All ${totalVariants} variants exhausted`);
+							} else {
+								console.log(
+									`[multiplexer/${modelId}] Switching from variant ${state.index} to ${nextIndex}`
+								);
+							}
+							state = {
+								index: nextIndex,
+								consecutiveErrors: 0,
+								totalAttempts: state.totalAttempts,
+							};
+						}
 					}
 				}
 
