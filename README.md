@@ -12,6 +12,7 @@ directly — no build step or compiled artifacts.
 | [`subagents`](extensions/subagents/) | `subagent` tool (fresh in-memory child session) + Codex-style markdown custom agents (`/agents`) |
 | [`websearch`](extensions/websearch/) | Exa-backed `web_search` + `web_fetch` tools (`/websearch` status command) |
 | [`goal`](extensions/goal/) | `/goal` autonomous goal loop — set/pause/resume/clear long-running objectives with token budgets (simplified port of pi-goal) |
+| [`ask-user`](extensions/ask-user/) | `ask_user` tool — ask the user one focused question and wait (TUI + RPC/Paseo safe) |
 
 ## Install
 
