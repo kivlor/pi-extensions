@@ -17,7 +17,8 @@ Every extension gets its own README, written in the same style as the others:
 
 1. `# @kivlor/pi-<name>` title
 2. One-line description
-3. `## Install` — `pi install @kivlor/pi-<name>` code block, followed by the
+3. `## Install` — `pi install npm:@kivlor/pi-<name>` code block (the `npm:`
+   prefix is required for namespaced npm packages), followed by the
    `--local`/`-l` note (copy it verbatim from an existing README)
 4. Then as applicable: `## Tools`, `## Commands`, `## What it does`,
    `## Configuration` / `## Usage`

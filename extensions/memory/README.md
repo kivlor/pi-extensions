@@ -5,7 +5,7 @@ Agent Memory Repo for pi — git-backed cross-session memory following [Cognitio
 ## Install
 
 ```bash
-pi install @kivlor/pi-memory
+pi install npm:@kivlor/pi-memory
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`

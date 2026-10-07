@@ -19,12 +19,12 @@ directly — no build step or compiled artifacts.
 ## Install
 
 ```bash
-pi install @kivlor/pi-subagents
-pi install @kivlor/pi-websearch
-pi install @kivlor/pi-goal
-pi install @kivlor/pi-ask-user
-pi install @kivlor/pi-memory
-pi install @kivlor/pi-multiplexer
+pi install npm:@kivlor/pi-subagents
+pi install npm:@kivlor/pi-websearch
+pi install npm:@kivlor/pi-goal
+pi install npm:@kivlor/pi-ask-user
+pi install npm:@kivlor/pi-memory
+pi install npm:@kivlor/pi-multiplexer
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`

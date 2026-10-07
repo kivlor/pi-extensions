@@ -6,7 +6,7 @@ provider variants when one starts failing.
 ## Install
 
 ```bash
-pi install @kivlor/pi-multiplexer
+pi install npm:@kivlor/pi-multiplexer
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`

@@ -8,7 +8,7 @@ model marks it complete, the user pauses/clears it, or a token budget runs out.
 ## Install
 
 ```bash
-pi install @kivlor/pi-goal
+pi install npm:@kivlor/pi-goal
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`

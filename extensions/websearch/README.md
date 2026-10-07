@@ -6,7 +6,7 @@ full text content for known URLs.
 ## Install
 
 ```bash
-pi install @kivlor/pi-websearch
+pi install npm:@kivlor/pi-websearch
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`

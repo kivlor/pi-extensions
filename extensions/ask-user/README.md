@@ -6,7 +6,7 @@ and wait for the answer.
 ## Install
 
 ```bash
-pi install @kivlor/pi-ask-user
+pi install npm:@kivlor/pi-ask-user
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`

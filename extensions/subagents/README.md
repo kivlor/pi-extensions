@@ -7,7 +7,7 @@ defined in a plain markdown file.
 ## Install
 
 ```bash
-pi install @kivlor/pi-subagents
+pi install npm:@kivlor/pi-subagents
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`
