@@ -1,6 +1,6 @@
 {
   "name": "@kivlor/pi-ask-user",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "ask_user tool for pi — ask the user one focused question and wait, TUI and RPC (Paseo) safe",
   "type": "module",
   "license": "MIT",
@@ -18,7 +18,9 @@
     "README.md"
   ],
   "pi": {
-    "extensions": ["./index.ts"]
+    "extensions": [
+      "./index.ts"
+    ]
   },
   "publishConfig": {
     "access": "public"
