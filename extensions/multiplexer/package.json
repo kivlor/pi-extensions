@@ -1,6 +1,6 @@
 {
   "name": "@kivlor/pi-multiplexer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Virtual models that rotate through provider variants on repeated failures",
   "type": "module",
   "license": "MIT",
@@ -18,7 +18,9 @@
     "README.md"
   ],
   "pi": {
-    "extensions": ["./index.ts"]
+    "extensions": [
+      "./index.ts"
+    ]
   },
   "publishConfig": {
     "access": "public"

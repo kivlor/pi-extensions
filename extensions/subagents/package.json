@@ -1,6 +1,6 @@
 {
   "name": "@kivlor/pi-subagents",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Minimal subagent delegation for pi — bounded child sessions plus markdown-defined custom agents (Codex-style)",
   "type": "module",
   "license": "MIT",
@@ -18,7 +18,9 @@
     "README.md"
   ],
   "pi": {
-    "extensions": ["./index.ts"]
+    "extensions": [
+      "./index.ts"
+    ]
   },
   "publishConfig": {
     "access": "public"

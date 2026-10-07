@@ -1,6 +1,6 @@
 {
   "name": "@kivlor/pi-memory",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Agent Memory Repo for pi — git-backed cross-session memory: memory_init/search/read/save tools, [[link]] navigation, auto-committed entries, session-start injection",
   "type": "module",
   "license": "MIT",
