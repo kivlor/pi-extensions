@@ -14,6 +14,7 @@ directly — no build step or compiled artifacts.
 | [`goal`](extensions/goal/) | `/goal` autonomous goal loop — set/pause/resume/clear long-running objectives with token budgets (simplified port of pi-goal) |
 | [`ask-user`](extensions/ask-user/) | `ask_user` tool — ask the user one focused question and wait (TUI + RPC/Paseo safe) |
 | [`memory`](extensions/memory/) | Agent Memory Repo — git-backed cross-session memory (`memory_init/search/read/save`, `/memory` status, session-start injection) |
+| [`multiplexer`](extensions/multiplexer/) | Virtual models that rotate through provider variants on failure — automatic failover between providers offering the same model |
 
 ## Install
 
@@ -21,7 +22,9 @@ directly — no build step or compiled artifacts.
 pi install @kivlor/pi-subagents
 pi install @kivlor/pi-websearch
 pi install @kivlor/pi-goal
+pi install @kivlor/pi-ask-user
 pi install @kivlor/pi-memory
+pi install @kivlor/pi-multiplexer
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`

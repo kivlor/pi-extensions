@@ -1,9 +1,18 @@
-# pi-goal
+# @kivlor/pi-goal
 
 Persistent autonomous goals for the [pi coding agent](https://github.com/earendil-works/pi).
 
 `/goal` keeps Pi working toward a long-running, thread-scoped objective until the
 model marks it complete, the user pauses/clears it, or a token budget runs out.
+
+## Install
+
+```bash
+pi install @kivlor/pi-goal
+```
+
+`--local`/`-l` writes the declaration to the project's `.pi/settings.json`
+instead of the personal one. Manage installed extensions with `pi config`.
 
 ## Usage
 
@@ -39,13 +48,7 @@ When a goal is paused due to errors:
 The error counter resets on any successful turn, so transient errors don't
 pause the goal unnecessarily.
 
-## Install
-
-```bash
-pi install @kivlor/pi-goal
-```
-
-or from a local checkout:
+Alternatively, install from a local checkout:
 
 ```bash
 pi install ./extensions/goal

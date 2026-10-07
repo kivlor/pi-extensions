@@ -2,6 +2,15 @@
 
 Agent Memory Repo for pi — git-backed cross-session memory following [Cognition's Agent Memory Repo spec](https://github.com/AgentMemoryRepo/agentmemoryrepo).
 
+## Install
+
+```bash
+pi install @kivlor/pi-memory
+```
+
+`--local`/`-l` writes the declaration to the project's `.pi/settings.json`
+instead of the personal one. Manage installed extensions with `pi config`.
+
 ## What it does
 
 Persists preferences, decisions, and context across sessions using a local git repo:
