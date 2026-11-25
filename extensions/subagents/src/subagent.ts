@@ -12,7 +12,7 @@ import {
   defineTool,
   type AgentToolUpdateCallback,
 } from "@earendil-works/pi-coding-agent";
-import type { AgentDefinition } from "./agents.ts";
+import { findAgent, discoverAgents, type AgentDefinition } from "./agents.ts";
 import {
   createLiveStatus,
   createThrottledEmitter,
@@ -30,6 +30,33 @@ let modelRuntimePromise: Promise<ModelRuntime> | undefined;
 function getModelRuntime(): Promise<ModelRuntime> {
   modelRuntimePromise ??= ModelRuntime.create({ refreshOnCreate: false });
   return modelRuntimePromise;
+}
+
+/**
+ * Enumerated role menu for the `agent` param description, built once at
+ * registration time. The calling model picks a role from this list per task;
+ * agents created later are still found by name at invocation time.
+ */
+function describeRoles(): string {
+  const agents = discoverAgents();
+  const suffix =
+    "Omit for a generic agent with default tools. Custom roles are markdown " +
+    "files in .pi/agents/ (project) or ~/.pi/agent/agents/ (personal).";
+  if (agents.length === 0) {
+    return "Name of a custom agent to use. " + suffix;
+  }
+  const menu = agents
+    .slice(0, 20)
+    .map((a: AgentDefinition) => {
+      const desc = a.description
+        ? a.description.length > 90
+          ? a.description.slice(0, 87) + "…"
+          : a.description
+        : "(no description)";
+      return `- ${a.name}: ${desc}`;
+    })
+    .join("\n");
+  return "Pick the role that best fits the task:\n" + menu + "\n" + suffix;
 }
 
 /**
@@ -64,16 +91,16 @@ export const subagentTool = defineTool({
   description:
     "Run a task in an isolated subagent with a fresh context and its own tools. " +
     "The subagent cannot see this conversation; include everything it needs in the task. " +
-    "Use a named custom agent to give it a specialized system prompt, model, or tool allowlist.",
+    "Use a named role (see the agent parameter for the available roles) to give it " +
+    "a specialized system prompt, model, or tool allowlist, and the model parameter " +
+    "to delegate to a cheaper or faster model.",
   parameters: Type.Object({
     task: Type.String({
       description: "Complete, self-contained instructions for the subagent.",
     }),
     agent: Type.Optional(
       Type.String({
-        description:
-          "Name of a custom agent (from .pi/agents/ or ~/.pi/agent/agents/) to use. " +
-          "Omit for a generic agent with default tools.",
+        description: describeRoles(),
       }),
     ),
     model: Type.Optional(
@@ -97,7 +124,6 @@ export const subagentTool = defineTool({
 
     let definition: AgentDefinition | undefined;
     if (agent) {
-      const { findAgent } = await import("./agents.ts");
       definition = findAgent(agent);
       if (!definition) {
         throw new Error(

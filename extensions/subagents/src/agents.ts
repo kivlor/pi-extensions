@@ -15,11 +15,14 @@
  * Agents are discovered from:
  *   1. .pi/agents/ in the current project (highest priority)
  *   2. ~/.pi/agent/agents/
+ *   3. the agents/ folder bundled with this extension (lowest priority,
+ *      so user and project definitions can override a bundled role)
  */
 
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
+import { fileURLToPath } from "node:url";
 
 export interface AgentDefinition {
   name: string;
@@ -33,10 +36,20 @@ export interface AgentDefinition {
   source: string;
 }
 
+/** Agents shipped inside this extension package. */
+export function bundledAgentsDir(): string {
+  try {
+    return fileURLToPath(new URL("../agents", import.meta.url));
+  } catch {
+    return join(process.cwd(), "agents");
+  }
+}
+
 export function agentsDirs(): string[] {
   return [
     join(process.cwd(), ".pi", "agents"),
     join(homedir(), ".pi", "agent", "agents"),
+    bundledAgentsDir(),
   ];
 }
 
@@ -95,7 +108,11 @@ export function discoverAgents(): AgentDefinition[] {
       const path = join(dir, file);
       try {
         const agent = parseFrontmatter(readFileSync(path, "utf8"), file);
-        if (agent && agent.systemPrompt) byName.set(agent.name, agent);
+        // First definition wins: agentsDirs() is ordered highest-priority
+        // first, so a project or personal agent can override a bundled role.
+        if (agent && agent.systemPrompt && !byName.has(agent.name)) {
+          byName.set(agent.name, agent);
+        }
       } catch {
         // unreadable file — skip
       }

@@ -39,16 +39,34 @@ the agent's frontmatter `model:`
 
 ## Commands
 
-- **`/agents`** — list agents
+- **`/agents`** — list roles (bundled, personal and project)
 - **`/agents <name>`** — inspect one
 - **`/agents:new <name>`** — scaffold one
 
-## Custom agents
+## Bundled roles
 
-Plain markdown files with YAML frontmatter, discovered from:
+The extension ships with roles that the calling model picks from a menu in
+the tool's `agent` parameter:
+
+| Role | Purpose |
+| --- | --- |
+| `code-reviewer` | hunts bugs, security issues and design flaws; verdict at the end |
+| `researcher` | read-only codebase exploration; factual answers with file:line citations |
+| `implementer` | bounded, fully-specified changes with verification |
+| `test-writer` | focused tests, run until green, bugs reported as findings |
+| `debugger` | reproduce, isolate, fix, verify |
+
+A bundled role can be overridden by putting a same-named markdown file in
+`.pi/agents/` or `~/.pi/agent/agents/`.
+
+## Custom roles
+
+Plain markdown files with YAML frontmatter, discovered from (highest
+priority first):
 
 1. `.pi/agents/` in the current project
 2. `~/.pi/agent/agents/`
+3. the extension's bundled `agents/` (overridable)
 
 File format:
 
