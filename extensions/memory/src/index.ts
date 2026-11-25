@@ -238,13 +238,14 @@ const memorySearchTool = defineTool({
     } catch (e) {
       return {
         content: [{ type: "text", text: `Invalid regex: ${e instanceof Error ? e.message : String(e)}` }],
+        details: { error: "invalid-regex" },
         isError: true,
       };
     }
     
     const dir = getMemoryDir();
     if (!existsSync(dir)) {
-      return { content: [{ type: "text", text: "Memory repo not initialized. Run memory_init first." }], isError: true };
+      return { content: [{ type: "text", text: "Memory repo not initialized. Run memory_init first." }], details: { error: "not-initialized" }, isError: true };
     }
     
     const matches: string[] = [];
@@ -262,11 +263,11 @@ const memorySearchTool = defineTool({
     }
     
     if (matches.length === 0) {
-      return { content: [{ type: "text", text: `No matches for /${pattern}/` }] };
+      return { content: [{ type: "text", text: `No matches for /${pattern}/` }], details: { matches: 0 } };
     }
     
     const truncated = matches.length > 50 ? matches.slice(0, 50).concat(`... (${matches.length - 50} more)`) : matches;
-    return { content: [{ type: "text", text: truncated.join("\n") }] };
+    return { content: [{ type: "text", text: truncated.join("\n") }], details: { matches: matches.length } };
   },
 });
 
@@ -293,16 +294,17 @@ const memoryReadTool = defineTool({
       const tried = resolved.tried.length ? resolved.tried.join(", ") : "(invalid path)";
       return {
         content: [{ type: "text", text: `File not found: ${path}\nTried: ${tried}` }],
+        details: { error: "not-found" },
         isError: true,
       };
     }
     
     const content = readFile(resolved.path);
     if (content === null) {
-      return { content: [{ type: "text", text: `Failed to read: ${resolved.path}` }], isError: true };
+      return { content: [{ type: "text", text: `Failed to read: ${resolved.path}` }], details: { error: "read-failed" }, isError: true };
     }
     
-    return { content: [{ type: "text", text: content }] };
+    return { content: [{ type: "text", text: content }], details: { path: resolved.path } };
   },
 });
 
@@ -338,7 +340,7 @@ const memorySaveTool = defineTool({
     const trimmed = text.trim();
     
     if (!trimmed) {
-      return { content: [{ type: "text", text: "Entry text is required." }], isError: true };
+      return { content: [{ type: "text", text: "Entry text is required." }], details: { error: "empty-entry" }, isError: true };
     }
     
     ensureMemoryDir();
@@ -346,7 +348,7 @@ const memorySaveTool = defineTool({
     // Determine target file
     const targetPath = path ? sanitizeRelPath(path) : MEMORY_FILE;
     if (!targetPath) {
-      return { content: [{ type: "text", text: `Invalid path: ${path}` }], isError: true };
+      return { content: [{ type: "text", text: `Invalid path: ${path}` }], details: { error: "invalid-path" }, isError: true };
     }
     
     const isMemoryFile = targetPath === MEMORY_FILE;
@@ -360,7 +362,7 @@ const memorySaveTool = defineTool({
     }
     
     // Format entry with metadata
-    const sessionId = ctx.sessionManager.getSessionHeader?.()?.id ?? "unknown";
+    const sessionId = ctx.sessionManager.getSessionId();
     const meta: EntryMeta = {
       source: sessionId,
       added: todayISO(),

@@ -13,7 +13,7 @@
  */
 
 import { Type } from "@earendil-works/pi-ai";
-import { defineTool, type ExtensionAPI, type AgentToolResult } from "@earendil-works/pi-coding-agent";
+import { defineTool, type ExtensionAPI, type AgentToolResult, type ModelRegistry } from "@earendil-works/pi-coding-agent";
 
 /** Details stored in tool result */
 interface GuardCheckDetails {
@@ -50,12 +50,12 @@ async function judgeAction(
 	action: string,
 	context: string,
 	classifier: { provider: string; id: string },
-	ctx: { modelRegistry: ExtensionAPI["modelRegistry"]; signal?: AbortSignal },
+	ctx: { modelRegistry: ModelRegistry; signal?: AbortSignal },
 ): Promise<{ decision: "allow" | "review" | "block"; confidence: number; reasoning: string } | null> {
 	const model = ctx.modelRegistry.findOfType("classifier", classifier.provider, classifier.id);
 	if (!model) return null;
 
-	if (!ctx.modelRegistry.hasConfiguredAuth(model)) return null;
+	if (!ctx.modelRegistry.getProviderAuthStatus(model.provider).configured) return null;
 
 	const result = await ctx.modelRegistry.classify(
 		model,
@@ -219,7 +219,7 @@ export default function guardExtension(pi: ExtensionAPI): void {
 		}
 
 		// Build action description for classifier
-		const actionDesc = `Tool: ${event.toolName}\nArguments: ${JSON.stringify(event.args, null, 2).slice(0, 2000)}`;
+		const actionDesc = `Tool: ${event.toolName}\nArguments: ${JSON.stringify(event.input, null, 2).slice(0, 2000)}`;
 
 		// Quick check: read-only tools are usually safe
 		const toolInfo = pi.getAllTools().find((t) => t.name === event.toolName);
@@ -231,7 +231,7 @@ export default function guardExtension(pi: ExtensionAPI): void {
 		// Run classifier judgment
 		const judgment = await judgeAction(actionDesc, "", classifier, {
 			modelRegistry: ctx.modelRegistry,
-			signal: event.signal,
+			signal: ctx.signal,
 		});
 
 		// If classifier unavailable, require review for non-readonly

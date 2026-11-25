@@ -84,10 +84,10 @@ export default function (pi: ExtensionAPI) {
 				}
 
 				// Check for failed message
-				if (request.failed?.errorMessage) {
+				if (request.failed?.message.errorMessage) {
 					// For non-retryable errors (quota/billing), switch immediately
 					// These aren't transient - the variant is blocked until fixed
-					if (NON_RETRYABLE_ERROR_PATTERN.test(request.failed.errorMessage)) {
+					if (NON_RETRYABLE_ERROR_PATTERN.test(request.failed.message.errorMessage)) {
 						const nextIndex = state.index + 1;
 						if (nextIndex >= totalVariants) {
 							console.error(`[multiplexer/${modelId}] All ${totalVariants} variants exhausted (non-retryable error)`);
@@ -104,7 +104,7 @@ export default function (pi: ExtensionAPI) {
 					}
 					// For rate limit errors (429), switch immediately to next variant
 					// Rate limits are transient but better to try another variant than wait
-					else if (RATE_LIMIT_PATTERN.test(request.failed.errorMessage)) {
+					else if (RATE_LIMIT_PATTERN.test(request.failed.message.errorMessage)) {
 						const nextIndex = state.index + 1;
 						if (nextIndex >= totalVariants) {
 							console.error(`[multiplexer/${modelId}] All ${totalVariants} variants exhausted (rate limit)`);

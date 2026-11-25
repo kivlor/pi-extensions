@@ -67,7 +67,7 @@ export const webSearchTool = defineTool({
       queryList.map(async (query, i) => {
         // onUpdate partials MUST carry a `content` array: the TUI renders
         // result.content directly and crashes on a content-less payload.
-        onUpdate({ content: [{ type: "text", text: `Searching (${i + 1}/${queryList.length}): ${query}` }] });
+        onUpdate?.({ content: [{ type: "text", text: `Searching (${i + 1}/${queryList.length}): ${query}` }], details: {} });
         const response = await searchExa(query, {
           numResults: params.numResults,
           includeContent: params.includeContent ?? false,
@@ -114,7 +114,7 @@ export const webFetchTool = defineTool({
         details: { error: "No URLs provided" },
       };
     }
-    onUpdate({ content: [{ type: "text", text: `Fetching ${urls.length} URL${urls.length === 1 ? "" : "s"}…` }] });
+    onUpdate?.({ content: [{ type: "text", text: `Fetching ${urls.length} URL${urls.length === 1 ? "" : "s"}…` }], details: {} });
     const pages = await fetchUrls(urls, signal);
     const sections = pages.map((p) =>
       p.error

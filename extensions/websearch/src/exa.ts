@@ -58,7 +58,7 @@ export function loadConfig(): Record<string, unknown> {
   } catch {
     cachedConfig = {};
   }
-  return cachedConfig;
+  return cachedConfig ?? {};
 }
 
 export function getApiKey(): string | undefined {
