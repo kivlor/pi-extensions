@@ -37,6 +37,16 @@ the agent's frontmatter `model:`
 { "task": "Summarize every file under docs/ in one line each", "model": "zai/glm-4.7" }
 ```
 
+## Skills
+
+The package ships one skill:
+
+- **`orchestrator`** — run a batch of work as a pure orchestrator: intake
+  questions, approved briefs with a role + done-when each, parallel dispatch
+  via codemode `Promise.allSettled`, review rounds against `code-reviewer`,
+  and result reporting. Load it with `/skill:orchestrator` or just ask pi to
+  "orchestrate" something.
+
 ## Commands
 
 - **`/agents`** — list roles (bundled, personal and project)
