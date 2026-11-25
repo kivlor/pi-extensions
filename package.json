@@ -6,6 +6,7 @@
   "workspaces": ["extensions/*"],
   "scripts": {
     "test": "node --test extensions/*/test/*.test.mjs 2>/dev/null || true",
+    "typecheck": "bunx tsc --noEmit --strict --skipLibCheck --target es2022 --module esnext --moduleResolution bundler --allowImportingTsExtensions extensions/*/index.ts",
     "publish": "npm publish --workspaces --access public"
   }
 }
