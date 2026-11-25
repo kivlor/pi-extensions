@@ -23,6 +23,15 @@ Every extension gets its own README, written in the same style as the others:
 4. Then as applicable: `## Tools`, `## Commands`, `## What it does`,
    `## Configuration` / `## Usage`
 
+## Local installs (dev machine)
+
+Extensions and skills on the dev machine are deliberately wired as **symlinks**
+(`~/.pi/agent/extensions/<name>` and `~/.pi/agent/skills/<skill>`) pointing
+into this checkout, so every repo edit is live on the next pi `/reload` —
+no reinstall. They are legacy-dir installs, not declared packages, so `pi.*`
+manifest keys (`skills`, `prompts`, …) only apply to npm installs. Do not
+migrate them to package declarations or replace the symlinks unless asked.
+
 ## Root README
 
 When adding a new extension, update the root `README.md`:
