@@ -28,6 +28,15 @@ and the model calls:
 { "task": "Review src/foo.ts ...", "agent": "code-reviewer" }
 ```
 
+To let a stronger model delegate work to a cheaper one, pass `model` (a
+`provider/model-id` string, resolved against your configured providers and
+`models.json`; a bare model id is matched across providers). It also overrides
+the agent's frontmatter `model:`
+
+```json
+{ "task": "Summarize every file under docs/ in one line each", "model": "zai/glm-4.7" }
+```
+
 ## Commands
 
 - **`/agents`** — list agents
@@ -46,7 +55,7 @@ File format:
 ```markdown
 ---
 description: Reviews code for bugs and security issues
-model: z-ai/glm-5.3
+model: zai/glm-4.7
 thinking: high
 tools: ["read", "bash", "grep"]
 ---

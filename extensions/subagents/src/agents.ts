@@ -5,7 +5,7 @@
  *
  *   ---
  *   description: Reviews code for bugs and security issues
- *   model: z-ai/glm-5.3
+ *   model: zai/glm-4.7
  *   thinking: medium
  *   tools: ["read", "bash", "grep"]
  *   ---
