@@ -1,5 +1,5 @@
 /**
- * @kivlor/pi-ask-user — entry point.
+ * @kivlor/pi-clarify — entry point.
  *
  * Registers:
  *   - `ask_user` tool: ask the user one focused question and block until answered

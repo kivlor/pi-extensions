@@ -1,4 +1,4 @@
-# @kivlor/pi-ask-user
+# @kivlor/pi-clarify
 
 `ask_user` tool for the Pi coding agent: ask the user one focused question
 and wait for the answer.
@@ -6,7 +6,7 @@ and wait for the answer.
 ## Install
 
 ```bash
-pi install npm:@kivlor/pi-ask-user
+pi install npm:@kivlor/pi-clarify
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`
@@ -40,6 +40,6 @@ dialog-capable UI) the tool returns immediately instead of blocking.
 ## Project-local alternative
 
 The whole implementation is one file. To use it in a single project without
-installing the package, copy `src/index.ts` to `<project>/.pi/extensions/ask-user.ts`.
+installing the package, copy `src/index.ts` to `<project>/.pi/extensions/clarify.ts`.
 
 No state, no I/O, no subprocesses, no dependencies beyond pi's own packages.

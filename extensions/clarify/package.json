@@ -1,5 +1,5 @@
 {
-  "name": "@kivlor/pi-ask-user",
+  "name": "@kivlor/pi-clarify",
   "version": "0.1.2",
   "description": "ask_user tool for pi — ask the user one focused question and wait, TUI and RPC (Paseo) safe",
   "type": "module",
@@ -9,7 +9,7 @@
     "pi",
     "pi-coding-agent",
     "extension",
-    "ask-user",
+    "clarify",
     "question"
   ],
   "files": [

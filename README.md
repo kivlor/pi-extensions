@@ -17,6 +17,7 @@ directly — no build step or compiled artifacts.
 | [`multiplexer`](extensions/multiplexer/) | Virtual models that rotate through provider variants on failure — automatic failover between providers offering the same model |
 | [`shortcodes`](extensions/shortcodes/) | Converts Slack-style `:emoji:` shortcodes to Unicode emoji on message submit |
 | [`guard`](extensions/guard/) | Safety oversight for AI agents — think through responses and guard tool calls until user approval |
+| [`checkpoint`](extensions/checkpoint/) | `checkpoint` tool — forks the session's full context into a child agent instead of delegating a lossy summary |
 
 ## Install
 
@@ -29,6 +30,7 @@ pi install npm:@kivlor/pi-memory
 pi install npm:@kivlor/pi-multiplexer
 pi install npm:@kivlor/pi-shortcodes
 pi install npm:@kivlor/pi-guard
+pi install npm:@kivlor/pi-checkpoint
 ```
 
 `--local`/`-l` writes the declaration to the project's `.pi/settings.json`

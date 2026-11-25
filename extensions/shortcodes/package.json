@@ -1,0 +1,31 @@
+{
+  "name": "@kivlor/pi-shortcodes",
+  "version": "0.1.0",
+  "description": "Convert Slack-style :emoji: shortcodes to Unicode emoji on message submit",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "pi-coding-agent",
+    "extension",
+    "emoji",
+    "shortcodes"
+  ],
+  "files": [
+    "index.ts",
+    "src",
+    "README.md"
+  ],
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}
